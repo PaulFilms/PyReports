@@ -1,5 +1,5 @@
 ''' 
-PyReport | Python Setup
+PyReports | Python Setup
 '''
 
 from setuptools import setup, find_packages, Extension
@@ -9,7 +9,7 @@ with open('requirements.txt') as f:
 
 setup(
     name = "pyreports",
-    version = '2024.09.23a',
+    version = '2024.09.23b',
     description="Toolkit for Documentation and Reporting",
     long_description = "README.md",
     author = 'Pablo GP',
@@ -18,8 +18,8 @@ setup(
     license = "Apache License",
     # package_dir={'': 'src'},
     # packages = find_packages(where='src'), # con find_pachages no conseguir hacerlo funcionar
-    packages=find_packages(),
-    # packages=["pycalibration"],
+    # packages=find_packages(),
+    packages=["pyreports"],
     include_package_data=True, # muy importante para que se incluyan archivos sin extension .py
     install_requires=requirements,
     # classifiers = [

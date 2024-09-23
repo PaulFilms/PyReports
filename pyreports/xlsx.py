@@ -9,7 +9,7 @@ from typing import List, Union
 from enum import Enum
 
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Alignment, Font, borders
+from openpyxl.styles import Alignment, Font, borders, PatternFill, Protection
 from openpyxl.worksheet import pagebreak
 from openpyxl.utils import get_column_letter, quote_sheetname, absolute_coordinate
 from openpyxl.workbook.defined_name import DefinedName
@@ -57,6 +57,8 @@ class fonts(Enum):
     main = Font(name='Calibri', size=10, bold=False)
     caption = Font(name='Calibri', size=8, bold=False)
 
+class pattern_fills(Enum):
+    RED = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
 
 ## FUNCTIONS
 ## _________________________________________________________________________________________________________________
@@ -174,6 +176,8 @@ class XLSREPORT:
         self.wb.create_sheet(sheet_name)
         self.ws = self.wb[sheet_name]
     
+    def cell_protect(self, row: int, column: int) -> None:
+        self.ws.cell(row, column).protection = Protection(locked=True)
 
     ## WRITE FUNCTIONS
     ## _________________________________________________________________________________________________________________

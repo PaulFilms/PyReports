@@ -1,6 +1,19 @@
 # PyReports
 Toolkit for Documentation and Reporting [ALPHA VERSION]
 
+## Tools included
+- Calc .xlsx Files
+- Report .PDF Files
+
+
+## Installation Method
+
+- Last released version
+
+   ```plaintext
+   Not available
+   ```
+
 - Latest development version
 
    ```plaintext

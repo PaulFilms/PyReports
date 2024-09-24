@@ -218,7 +218,7 @@ class XLSREPORT:
         self.wr(row, column, value, font=fonts.header.value, alignment=alignments.main.value)
         self.ws.cell(row, column).alignment = Alignment(
             horizontal=alignments_horizontal.left.value,
-            vertical=alignments_vertical.top.value,
+            vertical=alignments_vertical.center.value,
             wrap_text=wrap_text
         )
 

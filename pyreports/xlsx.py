@@ -1,11 +1,11 @@
 '''
-Toolkit with simplified functions and methods for create .xlsx Reports
+Toolkit with simplified functions and methods for create .xlsx spreadsheets
 '''
-__update__ = '2024.09.23'
+__update__ = '2024.09.27'
 
 import os
 import locale
-from typing import List, Union
+from typing import List, Union, Type, Any
 from enum import Enum
 
 from openpyxl import Workbook, load_workbook
@@ -14,6 +14,8 @@ from openpyxl.worksheet import pagebreak
 from openpyxl.utils import get_column_letter, quote_sheetname, absolute_coordinate
 from openpyxl.workbook.defined_name import DefinedName
 from openpyxl.drawing.image import Image
+
+# from PIL import Image as PILImage
 
 
 ## TOOLS
@@ -69,6 +71,55 @@ def get_os_decimal() -> str:
     '''
     return str(locale.localeconv()['decimal_point'])
 
+def get_column(column: int) -> str:
+    '''
+    Get Column Letter from an integer
+
+    - column = 1 -> 'A'
+    - column = 2 -> 'B'
+    - ...
+    '''
+    string = str()
+    while column > 0:
+        column, remainder = divmod(column - 1, 26)
+        string = chr(65 + remainder) + string
+    return string
+
+def get_formula(formula: str, row: int, columns_enum: Type[Enum]) -> str:
+    '''
+    Get a formula by replacing the variables into "<<>>" separators with the corresponding reference and row
+
+    `Args:`
+        - formula: str
+        - row: int
+        - columns_enum: Type[Any]
+
+    ***Note:*** `columns_enum` must be defined as an Enum class, like this:
+    ```python
+    class my_columns(Enum):
+        col1 = 1
+        col2 = 6
+    ```
+    
+    `Markers:`
+    ```
+    <<ROW>>
+    <<COLUMN_NAME>>
+    ```
+    
+    `Example:`
+    ```
+    '=IF(<<col2>><<ROW>><0,"Pass","Fail")'
+    ```
+    '''
+    if '<<ROW>>' in formula:
+        formula = formula.replace('<<ROW>>', str(row))
+    for col in columns_enum:
+        placeholder = f"<<{col.name}>>"
+        column_letter = get_column(col.value)
+        formula = formula.replace(placeholder, column_letter)
+    return formula
+
 def cell_str(row: int, column: int) -> str:
     '''
     Get the selected cell reference by numbers in text format
@@ -88,10 +139,8 @@ class XLSREPORT:
     `Args:`
         - `path` (str): Complete or relative path of report file
         - `worksheet_name` (str): Name of current DataSheet
-    
-    `Warnings:`
-        - This module it's under test yet, Glitches may occur
     '''
+
     def __init__(self, path: str, worksheet_name: str = "Data") -> None:
         self.filePath = path
         extension = os.path.splitext(path)[1]
@@ -222,7 +271,7 @@ class XLSREPORT:
             wrap_text=wrap_text
         )
 
-    def wr_headers(self, row: int, column_init: int, headers: List[str], wrap_text: bool = False):
+    def wr_headers(self, row: int, column_init: int, headers: List[str], wrap_text: bool = False) -> None:
         '''
         Write selected cell with Header format
         '''
@@ -232,12 +281,21 @@ class XLSREPORT:
             col+=1
         self.row_height(row, 35)
 
-    def wr_sci_number(self, row: int, column: int, value = int | float):
+    def wr_sci_number(self, row: int, column: int, value: int | float) -> None:
         '''
         Edit selected cell like sci number format (0.0E+0)
         '''
         self.wr(row, column, value)
         self.ws.cell(row, column).number_format = '0.0E+0'
+
+    def wr_image(self, row: int, column: int, img_path: str, scale: float = 100.0) -> None:
+        '''
+        Insert an image (*.jpg, *.png) into the selected cell 
+        '''
+        image = Image(img_path)
+        image.height = image.height * scale / 100
+        image.width = image.width * scale / 100
+        self.ws.add_image(image, f'{get_column(column)}{row}')
 
 
     ## UNDER TEST
@@ -308,19 +366,6 @@ class XLSREPORT:
         break_list.append(page_break)
         self.ws.row_breaks = break_list
 
-    def image_insert(self, row: int = 1, column: int = 1, img_path: str = None, height=None, width=None):
-        '''
-        * Necesary install Pillow packages
-        INCOMPLETE
-        Sin usar ni comprobar
-        '''
-        img = Image(img_path)
-        ## PIXEL VALUE
-        if height and width: 
-            img.height = height
-            img.width = width
-        cell_str: str = f'{get_column_letter(column)}{row}'
-        self.ws.add_image(img, cell_str)
 
 
 ## PANDAS

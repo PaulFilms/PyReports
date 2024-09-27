@@ -1,2 +1,4 @@
 openpyxl
+reportlab
+# pillow
 pandas

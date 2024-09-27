@@ -71,18 +71,25 @@ def get_os_decimal() -> str:
     '''
     return str(locale.localeconv()['decimal_point'])
 
-def get_column(column: int) -> str:
+def get_cell(column: int, row: int = None) -> str:
     '''
-    Get Column Letter from an integer
+    Get Column or cell reference
 
-    - column = 1 -> 'A'
-    - column = 2 -> 'B'
-    - ...
+    `Args:`
+        - column: int
+        - row: int (optional)
+    
+    `Returns:`
+        - column = 1 -> 'A'
+        - column = 6 -> 'F'
+        - column = 6, row = 7 -> 'F7'
     '''
     string = str()
     while column > 0:
         column, remainder = divmod(column - 1, 26)
         string = chr(65 + remainder) + string
+    if row:
+        string += str(row)
     return string
 
 def get_formula(formula: str, row: int, columns_enum: Type[Enum]) -> str:
@@ -116,17 +123,9 @@ def get_formula(formula: str, row: int, columns_enum: Type[Enum]) -> str:
         formula = formula.replace('<<ROW>>', str(row))
     for col in columns_enum:
         placeholder = f"<<{col.name}>>"
-        column_letter = get_column(col.value)
+        column_letter = get_cell(col.value)
         formula = formula.replace(placeholder, column_letter)
     return formula
-
-def cell_str(row: int, column: int) -> str:
-    '''
-    Get the selected cell reference by numbers in text format
-    
-    [1,1] -> [A1]
-    '''
-    return f'{get_column_letter(column)}{row}'
 
 
 ## XLSX REPORT
@@ -228,6 +227,7 @@ class XLSREPORT:
     def cell_protect(self, row: int, column: int) -> None:
         self.ws.cell(row, column).protection = Protection(locked=True)
 
+
     ## WRITE FUNCTIONS
     ## _________________________________________________________________________________________________________________
 
@@ -295,7 +295,7 @@ class XLSREPORT:
         image = Image(img_path)
         image.height = image.height * scale / 100
         image.width = image.width * scale / 100
-        self.ws.add_image(image, f'{get_column(column)}{row}')
+        self.ws.add_image(image, get_cell(column=column, row=row))
 
 
     ## UNDER TEST

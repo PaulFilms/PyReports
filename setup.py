@@ -9,7 +9,7 @@ with open('requirements.txt') as f:
 
 setup(
     name = "pyreports",
-    version = '2024.09.28',
+    version = '2024.09.28a',
     description="Toolkit for Documentation and Reporting",
     long_description = "README.md",
     author = 'Pablo GP',

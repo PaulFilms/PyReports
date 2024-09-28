@@ -4,6 +4,7 @@ Toolkit with simplified functions and methods for create .xlsx spreadsheets
 __update__ = '2024.09.28'
 
 import os
+import re
 import locale
 from typing import List, Union, Type, Any
 from enum import Enum

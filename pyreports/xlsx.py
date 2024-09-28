@@ -1,7 +1,7 @@
 '''
 Toolkit with simplified functions and methods for create .xlsx spreadsheets
 '''
-__update__ = '2024.09.27'
+__update__ = '2024.09.28'
 
 import os
 import locale
@@ -61,6 +61,7 @@ class fonts(Enum):
 
 class pattern_fills(Enum):
     RED = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
+    GREY = PatternFill(start_color='808080', end_color='808080', fill_type='solid')
 
 ## FUNCTIONS
 ## _________________________________________________________________________________________________________________
@@ -110,13 +111,16 @@ def get_formula(formula: str, row: int, columns_enum: Type[Enum]) -> str:
     
     `Markers:`
     ```
-    <<ROW>>
+    <<ROW>> ** Fixed marker reserved to row indication
     <<COLUMN_NAME>>
+    <<COLUMN_NAME+3>> ** With column (+)offset
+    <<COLUMN_NAME-4>> ** With column (-)offset
     ```
     
-    `Example:`
+    `Examples:`
     ```
     '=IF(<<col2>><<ROW>><0,"Pass","Fail")'
+    '=COUNT(<<col1>><<ROW>>:<<col1+9>><<ROW>>)'
     ```
     '''
     if '<<ROW>>' in formula:
@@ -125,6 +129,12 @@ def get_formula(formula: str, row: int, columns_enum: Type[Enum]) -> str:
         placeholder = f"<<{col.name}>>"
         column_letter = get_cell(col.value)
         formula = formula.replace(placeholder, column_letter)
+        ## OFFSET
+        Match = re.search(rf"<<{col.name}([+-]\d+)?>>", formula)
+        if Match:
+            offset = int(Match.group(1))
+            column_letter = get_cell(col.value+offset)
+            formula = formula.replace(Match.group(0), column_letter)
     return formula
 
 

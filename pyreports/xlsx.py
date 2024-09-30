@@ -1,7 +1,7 @@
 '''
 Toolkit with simplified functions and methods for create .xlsx spreadsheets
 '''
-__update__ = '2024.09.29'
+__update__ = '2024.09.30'
 
 import os
 import re
@@ -175,6 +175,8 @@ class XLSREPORT:
         else:
             self.wb.create_sheet(worksheet_name)
             self.ws = self.wb[worksheet_name]
+            # Establece el alto de todas las filas de la hoja
+            self.ws.row_dimensions[1:].height = 15
             self.wb.save(self.filePath)
 
         ## INIT
@@ -184,10 +186,25 @@ class XLSREPORT:
         self.wb.save(self.filePath)
 
     def close(self) -> None:
+        self.wb.save(self.filePath)
         self.wb.close()
 
     def get_properties(self) -> any:
         return self.wb.properties
+
+    def sheet_list(self) -> List[str]:
+        return self.wb.sheetnames 
+
+    def sheet_select(self, sheet_name: str) -> None:
+        self.ws = self.wb[sheet_name]
+
+    def sheet_new(self, sheet_name: str) -> None:
+        '''
+        Create and select a new excel sheet
+        '''
+        self.wb.create_sheet(sheet_name)
+        self.ws = self.wb[sheet_name]
+        self.ws.row_dimensions[1:].height = 15
 
     def row_inc(self, number: int = 1) -> None:
         '''
@@ -223,19 +240,6 @@ class XLSREPORT:
         '''
         fullRange = f"A1:{get_column_letter(self.ws.max_column)}{self.ws.max_row}"
         self.ws.auto_filter.ref = fullRange
-
-    def sheet_list(self) -> List[str]:
-        return self.wb.sheetnames 
-
-    def sheet_select(self, sheet_name: str) -> None:
-        self.ws = self.wb[sheet_name]
-
-    def sheet_new(self, sheet_name: str) -> None:
-        '''
-        Create and select a new excel sheet
-        '''
-        self.wb.create_sheet(sheet_name)
-        self.ws = self.wb[sheet_name]
     
     def cell_protect(self, row: int, column: int) -> None:
         self.ws.cell(row, column).protection = Protection(locked=True)
@@ -265,7 +269,7 @@ class XLSREPORT:
             print("ERROR wr:")
             print(e)
             self.ws.cell(row, column).value = "ERROR"
-        self.row_height(row, 15)
+        # self.row_height(row, 15)
 
     def wr_title(self, row: int, column: int, value: str):
         '''
@@ -284,6 +288,7 @@ class XLSREPORT:
             vertical=alignments_vertical.center.value,
             wrap_text=wrap_text
         )
+        # self.row_height(row, 30)
 
     def wr_headers(self, row: int, column_init: int, headers: List[str], wrap_text: bool = False) -> None:
         '''
@@ -301,6 +306,7 @@ class XLSREPORT:
         '''
         self.wr(row, column, value)
         self.ws.cell(row, column).number_format = '0.0E+0'
+        # self.row_height(row, 15)
 
     def wr_image(self, row: int, column: int, img_path: str, scale: float = 100.0) -> None:
         '''

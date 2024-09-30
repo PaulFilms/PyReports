@@ -1,7 +1,7 @@
 '''
 Toolkit with simplified functions and methods for create .xlsx spreadsheets
 '''
-__update__ = '2024.09.28'
+__update__ = '2024.09.29'
 
 import os
 import re
@@ -50,6 +50,7 @@ class alignments(Enum):
     Normalized alignments
     '''
     main = Alignment(horizontal=alignments_horizontal.left.value, vertical=alignments_vertical.center.value)
+    top = Alignment(horizontal=alignments_horizontal.left.value, vertical=alignments_vertical.top.value)
 
 class fonts(Enum):
     '''
@@ -63,6 +64,7 @@ class fonts(Enum):
 class pattern_fills(Enum):
     RED = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
     GREY = PatternFill(start_color='808080', end_color='808080', fill_type='solid')
+
 
 ## FUNCTIONS
 ## _________________________________________________________________________________________________________________
@@ -263,13 +265,14 @@ class XLSREPORT:
             print("ERROR wr:")
             print(e)
             self.ws.cell(row, column).value = "ERROR"
+        self.row_height(row, 15)
 
     def wr_title(self, row: int, column: int, value: str):
         '''
         Write selected cell with Title format
         '''
         self.wr(row, column, value, font=fonts.title.value, alignment=alignments.main.value)
-        self.row_height(row, 40)
+        self.row_height(row, 30)
 
     def wr_header(self, row: int, column: int, value: str, wrap_text: bool = False) -> None:
         '''
@@ -290,7 +293,7 @@ class XLSREPORT:
         for header in headers:
             self.wr_header(row=row, column=col, value=header, wrap_text=wrap_text)
             col+=1
-        self.row_height(row, 35)
+        self.row_height(row, 30)
 
     def wr_sci_number(self, row: int, column: int, value: int | float) -> None:
         '''

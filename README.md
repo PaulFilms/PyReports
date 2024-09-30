@@ -23,7 +23,7 @@ Toolkit for Documentation and Reporting [ALPHA VERSION]
 
 ## TASK 📒
 
-- ...
+- Segun la configuración por defecto, cada pagina tiene unas 50 filas (La cabeceras ocupan el doble) y 6 filas de cabecera, Hay que automatizarlo
 
 
 

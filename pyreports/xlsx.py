@@ -1,7 +1,7 @@
 '''
 Toolkit with simplified functions and methods for create .xlsx spreadsheets
 '''
-__update__ = '2024.09.30'
+__update__ = '2024.10.04'
 
 import os
 import re
@@ -64,6 +64,9 @@ class fonts(Enum):
 class pattern_fills(Enum):
     RED = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
     GREY = PatternFill(start_color='808080', end_color='808080', fill_type='solid')
+    GREEN = PatternFill(start_color='93DC5C', end_color='93DC5C', fill_type='solid')
+    YELLOW = PatternFill(start_color='E5DE00', end_color='E5DE00', fill_type='solid')
+    BLUE = PatternFill(start_color='1A43BF', end_color='1A43BF', fill_type='solid')
 
 
 ## FUNCTIONS
@@ -163,6 +166,8 @@ class XLSREPORT:
         if os.path.exists(self.filePath) == False:
             self.wb = Workbook(self.filePath)
             self.wb.create_sheet(worksheet_name)
+            self.ws = self.wb[worksheet_name]
+            self.ws.sheet_format.defaultRowHeight = 15
             self.wb.save(self.filePath)
             self.wb.close()
 
@@ -175,8 +180,6 @@ class XLSREPORT:
         else:
             self.wb.create_sheet(worksheet_name)
             self.ws = self.wb[worksheet_name]
-            # Establece el alto de todas las filas de la hoja
-            self.ws.row_dimensions[1:].height = 15
             self.wb.save(self.filePath)
 
         ## INIT
@@ -202,9 +205,11 @@ class XLSREPORT:
         '''
         Create and select a new excel sheet
         '''
-        self.wb.create_sheet(sheet_name)
+        if not sheet_name in self.wb.sheetnames:
+            self.wb.create_sheet(sheet_name)
         self.ws = self.wb[sheet_name]
-        self.ws.row_dimensions[1:].height = 15
+        self.ws.sheet_format.defaultRowHeight = 15
+        # self.ws.row_dimensions[1:].height = 15
 
     def row_inc(self, number: int = 1) -> None:
         '''
@@ -245,7 +250,7 @@ class XLSREPORT:
         self.ws.cell(row, column).protection = Protection(locked=True)
 
 
-    ## WRITE FUNCTIONS
+    ## READ/WRITE FUNCTIONS
     ## _________________________________________________________________________________________________________________
 
     def rd(self, row: int, column: int) -> any:

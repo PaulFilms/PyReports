@@ -1,7 +1,7 @@
 '''
 Toolkit with simplified functions and methods for create .xlsx spreadsheets
 '''
-__update__ = '2024.10.04'
+__update__ = '2024.10.29'
 
 import os
 import re
@@ -398,11 +398,11 @@ class XLSREPORT:
 
 import pandas as pd
 
-def DF_REPORT(dataFrame: pd.DataFrame, path: str, fontName: str = 'Calibri') -> None:
+def DF_REPORT(dataFrame: pd.DataFrame, path: str) -> None:
     '''
     Create excel report from selected Pandas DataFrame
     '''
-    report = XLSREPORT(path, fontName)
+    report = XLSREPORT(path)
     ## HEADERS
     headers: list = dataFrame.columns.values.tolist()
     report.wr_headers(1, 1, headers)

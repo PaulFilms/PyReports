@@ -1,7 +1,7 @@
 '''
 Toolkit with simplified functions and methods for create .xlsx spreadsheets
 '''
-__update__ = '2024.10.29'
+__update__ = '2024.11.28'
 
 import os
 import re
@@ -156,17 +156,20 @@ class XLSREPORT:
         - `worksheet_name` (str): Name of current DataSheet
     '''
 
-    def __init__(self, path: str, worksheet_name: str = "Data") -> None:
+    def __init__(self, path: str, worksheet_name: str = None) -> None: # worksheet_name: str = "Data"
         self.filePath = path
         extension = os.path.splitext(path)[1]
         if extension == str() or extension == None:
             self.filePath += ".xlsx"
 
         ## NEW WORKBOOK
-        if os.path.exists(self.filePath) == False:
+        if not os.path.exists(self.filePath):
             self.wb = Workbook(self.filePath)
             self.wb.create_sheet(worksheet_name)
-            self.ws = self.wb[worksheet_name]
+            if worksheet_name:
+                self.ws = self.wb[worksheet_name]
+            else:
+                self.ws = self.wb['Sheet1']
             self.ws.sheet_format.defaultRowHeight = 15
             self.wb.save(self.filePath)
             self.wb.close()
@@ -175,12 +178,15 @@ class XLSREPORT:
         self.wb = load_workbook(self.filePath, read_only=False) ## Force load_workbook to open like WriteOnly
 
         ## WORKSHEET
-        if worksheet_name in self.wb.sheetnames:
-            self.ws = self.wb[worksheet_name]
+        if not worksheet_name:
+            self.ws = self.wb[self.wb.sheetnames[0]]
         else:
-            self.wb.create_sheet(worksheet_name)
-            self.ws = self.wb[worksheet_name]
-            self.wb.save(self.filePath)
+            if worksheet_name in self.wb.sheetnames:
+                self.ws = self.wb[worksheet_name]
+            else:
+                self.wb.create_sheet(worksheet_name)
+                self.ws = self.wb[worksheet_name]
+                self.wb.save(self.filePath)
 
         ## INIT
         self.row: int = 1

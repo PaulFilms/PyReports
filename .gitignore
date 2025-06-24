@@ -11,6 +11,6 @@ env.bak/
 venv.bak/
 
 # Test
-.ipynb
-.xlsx
-.pdf
+# .ipynb
+*.xlsx
+*.pdf

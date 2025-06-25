@@ -3,10 +3,13 @@ Toolkit with simplified functions and methods for create .pdf Reports
 
 ⚠️INCOMPLETE
 '''
-__update__ = '2025.06.24'
+__update__ = '2025.06.25'
 
-from dataclasses import dataclass
+import os
+# from dataclasses import dataclass
 from enum import Enum
+from PIL import Image
+from io import BytesIO
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm, inch
@@ -15,7 +18,6 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.lib import pagesizes
 from reportlab.lib import colors
 from reportlab.lib.utils import ImageReader
-
 
 ## TOOLS
 ## _________________________________________________________________________________________________________________
@@ -30,30 +32,22 @@ print(cm)    # ≈ 28.35 point
 print(inch)  # 72 point
 '''
 
-class orientations(Enum):
-	landscape = 'landscape'
-	portrait = 'portrait'
+# class orientations(Enum):
+# 	landscape = 'landscape'
+# 	portrait = 'portrait'
 
-class pase_sizes(Enum):
-	'''
-	Tuple[x, y]
-	'''
-	A4_horizontal = (cm*21, cm*29.7) # 210 x 297 mm
-	A4_vertical = (cm*29.7, cm*21) # 297 x 210 mm
-
-# @dataclass
-# class fontTypes(str):
+# class pase_sizes(Enum):
 # 	'''
-# 	DataClass to define Font Types in text format
+# 	Tuple[x, y]
 # 	'''
-# 	normal: str = "Normal"
-# 	bold: str = "Bold"
-# 	italic: str = "Italic"
-# 	bold_italic: str = "Bold_Italic"
+# 	# A4_horizontal = (cm*21, cm*29.7) # 210 x 297 mm
+# 	# A4_vertical = (cm*29.7, cm*21) # 297 x 210 mm
+# 	A4_horizontal = pagesizes.landscape(pagesizes.A4) # 210 x 297 mm
+# 	A4_vertical = pagesizes.portrait(pagesizes.A4) # 297 x 210 mm
 
 class fontTypes(Enum):
 	'''
-	Font Types in text format
+	Registered Font Types in text format
 	'''
 	normal = TTFont('normal', 'arial.ttf')
 	bold = TTFont('bold', 'arialbd.ttf')
@@ -76,12 +70,8 @@ class PDFREPORT:
 	Default Font: Arial
 	'''
 	def __init__(self, 
-			filePath, 
+			filePath, ## path_file.pdf
 			docTitle: str, 
-			# defaultFont=fontTypes.normal, 
-			# defaultSize=8, 
-			defaulColor=colors.black,
-			# orientation: orientations = orientations.portrait.value,
 			pagesize: tuple[float, float] = pagesizes.portrait(pagesizes.A4), ## Tuple[x: float, y: float]
 			marginTop: float = cm*1, ## 1 cm
 			marginBottom: float = cm*2, ## 1 cm
@@ -89,7 +79,6 @@ class PDFREPORT:
 			marginRight: float = cm*1, ## 1 cm
 		):
 		
-		# self.filePath = filePath
 		self.PDF = canvas.Canvas(
 			filePath,
 			pagesize=pagesize
@@ -98,8 +87,8 @@ class PDFREPORT:
 		## DOCUMENT NAME
 		if docTitle:
 			self.PDF.setTitle(docTitle)
-		else:
-			self.PDF.setTitle("REPORT")
+		# else:
+		# 	self.PDF.setTitle("REPORT")
 		
 		## FONTS
 		for f in fontTypes:
@@ -113,7 +102,6 @@ class PDFREPORT:
 		self.marginLeft = marginLeft
 		self.marginRight = marginRight
 
-
 		## Get objects
 		# lineWidth = self.PDF._lineWidth
 		# print(lineWidth)
@@ -124,9 +112,8 @@ class PDFREPORT:
 		# self.PDF.save()
 
 		## Cursor Position
-		self.X = 0
-		self.Y = 0
-		pass
+		# self.X: float = 0.0
+		# self.Y: float = 0.0
 
 	def showPage(self):
 		self.PDF.showPage()
@@ -153,48 +140,117 @@ class PDFREPORT:
 		)
 		return self.get_x(), y - 20
 
-	def wr_normal(self, y: float, text: str, centered: bool = False) -> tuple[float, float]:
-		font_name = fontTypes.normal.name
-		font_size = 12
-		self.PDF.setFont(font_name, font_size, leading=font_size + self.spacing)
+	def wr_image(self, x: float, y: float, img_path: str, size_percent: float = 100) -> None:
+		if not os.path.exists(img_path):
+			return
+		img = Image.open(img_path)
 		
-		x=self.get_x()
-		if centered:
-			text_width = self.PDF.stringWidth(text, self.PDF._fontname, self.PDF._fontsize)
-			x = self.get_x(centered=centered) - (text_width / 2)	
+		if img.mode not in ("RGB", "RGBA"):
+			img = img.convert("RGB")
 
-		# Construye el TextObject
+		## Crea un buffer en memoria con formato PNG
+		buf = BytesIO()
+		img.save(buf, format="PNG")
+		buf.seek(0)
+		reader = ImageReader(buf)
+
+		## dpi size
+		dpi = img.info.get('dpi', (72, 72))
+		w_px, h_px = img.size
+		w_pt = w_px * (72 / dpi[0])
+		h_pt = h_px * (72 / dpi[1])
+
+		self.PDF.drawImage(
+			reader, 
+			x=x, 
+			y=y-h_pt, 
+			width= img.size[0] * size_percent/100, 
+			height= img.size[1] * size_percent/100,
+			mask='auto'
+		)
+
+	def write(self, 
+		   x: float, y: float, text: str, 
+		   font_name: str = fontTypes.normal.name,
+		   font_size: float = 12,
+		   color: colors = colors.black,
+		   ):
 		txt = self.PDF.beginText()
 		txt.setTextOrigin(x, y)
 		txt.setFont(font_name, font_size)
 		txt.setLeading(font_size + self.spacing)
+		txt.setFillColor(color)
 		txt.textLine(text)
+		
 		self.PDF.drawText(txt)
 
-		# total_spacing = self.spacing + self.PDF._fontsize
-		return 0.0, txt.getY() # y - total_spacing
+		return txt.getX(), txt.getY()
 
-	def wr_header1(self, y: float, text: str, centered: bool = False) -> tuple[float, float]:
-		font_name = fontTypes.bold.name
-		font_size = 14
-		self.PDF.setFont(font_name, font_size, leading=font_size + self.spacing)
+	def wr_normal(self, y: float, text: str, centered: bool = False) -> tuple[float, float]:
+		# font_name = fontTypes.normal.name
+		# font_size = 12
+		# self.PDF.setFont(font_name, font_size, leading=font_size + self.spacing)
 		
+		# x=self.get_x()
+		# if centered:
+		# 	text_width = self.PDF.stringWidth(text, self.PDF._fontname, self.PDF._fontsize)
+		# 	x = self.get_x(centered=centered) - (text_width / 2)	
+
+		# # Construye el TextObject
+		# txt = self.PDF.beginText()
+		# txt.setTextOrigin(x, y)
+		# txt.setFont(font_name, font_size)
+		# txt.setLeading(font_size + self.spacing)
+		# txt.textLine(text)
+		# self.PDF.drawText(txt)
+
+		# # total_spacing = self.spacing + self.PDF._fontsize
+		# return 0.0, txt.getY() # y - total_spacing
+
+		font_name = fontTypes.normal.name
+		font_size = 12
+
 		x=self.get_x()
 		if centered:
-			text_width = self.PDF.stringWidth(text, self.PDF._fontname, self.PDF._fontsize)
-			x = self.get_x(centered=centered) - (text_width / 2)	
+			text_width = self.PDF.stringWidth(text, font_name, font_size)
+			x = self.get_x(centered=centered) - (text_width / 2)
+		
+		new_x, new_y = self.write(x, y, text, font_name, font_size)
 
-		# Construye el TextObject
-		txt = self.PDF.beginText()
-		txt.setTextOrigin(x, y - self.spacing)
-		txt.setFont(font_name, font_size)
-		txt.setLeading(font_size + self.spacing)
-		txt.textLine(text)
-		self.PDF.drawText(txt)
+		return new_x, new_y
 
-		# total_spacing = self.spacing + self.PDF._fontsize
-		return 0.0, txt.getY() # - self.spacing # y - total_spacing
+	def wr_header1(self, y: float, text: str, centered: bool = False) -> tuple[float, float]:
+		# font_name = fontTypes.bold.name
+		# font_size = 14
+		# self.PDF.setFont(font_name, font_size, leading=font_size + self.spacing)
+		
+		# x=self.get_x()
+		# if centered:
+		# 	text_width = self.PDF.stringWidth(text, self.PDF._fontname, self.PDF._fontsize)
+		# 	x = self.get_x(centered=centered) - (text_width / 2)	
 
+		# # Construye el TextObject
+		# txt = self.PDF.beginText()
+		# txt.setTextOrigin(x, y - self.spacing)
+		# txt.setFont(font_name, font_size)
+		# txt.setLeading(font_size + self.spacing)
+		# txt.textLine(text)
+		# self.PDF.drawText(txt)
+
+		# # total_spacing = self.spacing + self.PDF._fontsize
+		# return 0.0, txt.getY() # - self.spacing # y - total_spacing
+		
+		font_name = fontTypes.bold.name
+		font_size = 14
+
+		x=self.get_x()
+		if centered:
+			text_width = self.PDF.stringWidth(text, font_name, font_size)
+			x = self.get_x(centered=centered) - (text_width / 2)
+		
+		new_x, new_y = self.write(x, y, text, font_name, font_size)
+
+		return new_x, new_y
 
 	# def WR_LINE(self, x=int, y=int, TXT=str):
 	# 	'''
@@ -289,20 +345,6 @@ class PDFREPORT:
 
 	# def WR_SPACING(self, lines=1):
 	# 	self.row -= (self.spacing * 2 * lines)
-
-	# def IMAGE_INSERT(self, imageFile, x=int, y=int, ):
-	# 	'''
-	# 	INCOMPLETE
-	# 	Hay que añadir la relacion de aspecto
-	# 	'''
-	# 	## drawing a image at the specified (x.y) position
-	# 	image = ImageReader(imageFile)
-	# 	image = imageFile
-	# 	self.PDF.drawInlineImage(image, x, y)
-	# 	pass
-
-	# def FONT_REGISTRER(self, fontName=str, fontTTF="Arial.ttf"):
-	# 	pdfmetrics.registerFont(TTFont(fontName, fontTTF))
 	
 	# def SET_DEFAULT(self):
 	# 	'''
@@ -310,27 +352,6 @@ class PDFREPORT:
 	# 	'''
 	# 	self.SET_FONT(self.defaultFont, self.defaultSize)
 	# 	self.PDF.setFillColor(self.defaulColor)
-
-	# def SET_FONT(self, fontType: fontTypes, fontSize: int):
-	# 	'''
-	# 	Set the font Type and font Size
-	# 	'''
-	# 	self.PDF.setFont(fontType, fontSize)
-
-	# def SET_COLOR(self, color=colors, rgb=tuple):
-	# 	'''
-	# 	INCOMPLETE:
-	# 		- Hay que crear un dataclass con el color
-	# 	'''
-	# 	# if color == "black": self.PDF.setFillColorRGB(0, 0, 0)
-	# 	# if color == "blue": self.PDF.setFillColorRGB(0, 0, 255)
-	# 	# if color == "red": self.PDF.setFillColorRGB(255, 0, 0)
-	# 	# if color == "green": self.PDF.setFillColorRGB(0, 255, 0)
-	# 	# if color == "grey": self.PDF.setFillColorRGB(160, 160, 160)
-	# 	self.PDF.setFillColor(color)
-	# 	color_rgb = self.PDF._fillColorObj
-	# 	# print("SET_COLOR:", color_rgb)
-	# 	pass
 
 def from_markdown(md_path: str, pdf_path: str):
 	''' ⚠️INCOMPLETE

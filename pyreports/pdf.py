@@ -2,11 +2,43 @@
 Toolkit with simplified functions and methods for create .pdf Reports
 
 ⚠️INCOMPLETE
+
+NOTES:
+
+- ❕FONTS:
+	...
+
+- ❕SIZES:
+
+	In ReportLab, the size of your Canvas (and all coordinates/dimensions you use) is expressed in points, 
+	where 1 point = 1/72 of an inch
+	```Python
+	from reportlab.lib.units import cm, inch
+
+	print(cm)    # ≈ 28.35 point
+	print(inch)  # 72 point
+	```
+
+- PAGE SIZES:
+
+	To define the page size, you can use the `pagesizes` module from ReportLab or Tuple[x, y].
+	
+	```Python
+	# By Tuple in cm
+	A4_horizontal = (cm*21, cm*29.7) # 210 x 297 mm
+	A4_vertical = (cm*29.7, cm*21) # 297 x 210 mm
+
+	# By pagesizes module
+	from reportlab.lib import pagesizes
+	A4_horizontal = pagesizes.landscape(pagesizes.A4) # 210 x 297 mm
+	A4_vertical = pagesizes.portrait(pagesizes.A4) # 297 x 210 mm
+	```
+
 '''
-__update__ = '2025.06.25'
+__update__ = '2025.07.03'
 
 import os
-# from dataclasses import dataclass
+from dataclasses import dataclass
 from enum import Enum
 from PIL import Image
 from io import BytesIO
@@ -22,47 +54,40 @@ from reportlab.lib.utils import ImageReader
 ## TOOLS
 ## _________________________________________________________________________________________________________________
 
-''' ❕PAGE SIZE:
-In ReportLab, the size of your Canvas (and all coordinates/dimensions you use) is expressed in points, 
-where 1 point = 1/72 of an inch
-
-from reportlab.lib.units import cm, inch
-
-print(cm)    # ≈ 28.35 point
-print(inch)  # 72 point
-'''
-
-# class orientations(Enum):
-# 	landscape = 'landscape'
-# 	portrait = 'portrait'
-
-# class pase_sizes(Enum):
-# 	'''
-# 	Tuple[x, y]
-# 	'''
-# 	# A4_horizontal = (cm*21, cm*29.7) # 210 x 297 mm
-# 	# A4_vertical = (cm*29.7, cm*21) # 297 x 210 mm
-# 	A4_horizontal = pagesizes.landscape(pagesizes.A4) # 210 x 297 mm
-# 	A4_vertical = pagesizes.portrait(pagesizes.A4) # 297 x 210 mm
-
-class fontTypes(Enum):
+class Font:
 	'''
-	Registered Font Types in text format
+	`Fields:`
+
+	- normal
+	- bold
+	- italic
+	- italic_bold
 	'''
-	normal = TTFont('normal', 'arial.ttf')
-	bold = TTFont('bold', 'arialbd.ttf')
-	italic = TTFont('italic', 'ariali.ttf')
+	class fields(Enum):
+		normal = 'normal'
+		bold = 'bold'
+		italic = 'italic'
+		italic_bold = 'italic_bold'
+	
+	@dataclass
+	class types:
+		normal: TTFont
+		bold: TTFont
+		italic: TTFont
+		italic_bold: TTFont
+	
+	@dataclass
+	class font:
+		name: str = 'normal'
+		size: float = 12
+		color: colors = colors.black
+
+arial_fonts = Font.types(
+	normal = TTFont('normal', 'arial.ttf'),
+	bold = TTFont('bold', 'arialbd.ttf'),
+	italic = TTFont('italic', 'ariali.ttf'),
 	italic_bold = TTFont('italic_bold', 'arialbi.ttf')
-
-# @dataclass
-# class richText():
-# 	'''
-# 	DataClass for defining the content and formatting of a text string
-# 	'''
-# 	value: str = ""
-# 	font: fontTypes = fontTypes.normal
-# 	size: float = 8
-# 	color: colors = colors.black
+)
 		
 class PDFREPORT:
 	'''
@@ -77,6 +102,7 @@ class PDFREPORT:
 			marginBottom: float = cm*2, ## 1 cm
 			marginLeft: float = cm*1.5, ## 1.5 cm
 			marginRight: float = cm*1, ## 1 cm
+			fonts: Font.types = arial_fonts
 		):
 		
 		self.PDF = canvas.Canvas(
@@ -91,8 +117,14 @@ class PDFREPORT:
 		# 	self.PDF.setTitle("REPORT")
 		
 		## FONTS
-		for f in fontTypes:
-			pdfmetrics.registerFont(f.value)
+		# for f in fonts:
+		# 	pdfmetrics.registerFont(f.value)
+		self.fonts = fonts
+		pdfmetrics.registerFont(self.fonts.normal)
+		pdfmetrics.registerFont(self.fonts.bold)
+		pdfmetrics.registerFont(self.fonts.italic)
+		pdfmetrics.registerFont(self.fonts.italic_bold)
+
 		
 		## PAGE SIZE / MARGINS
 		self.spacing = 5
@@ -171,13 +203,17 @@ class PDFREPORT:
 
 	def write(self, 
 		   x: float, y: float, text: str, 
-		   font_name: str = fontTypes.normal.name,
+		   font_name: Font.fields | str = Font.fields.normal,
 		   font_size: float = 12,
 		   color: colors = colors.black,
 		   ):
 		txt = self.PDF.beginText()
 		txt.setTextOrigin(x, y)
-		txt.setFont(font_name, font_size)
+		if isinstance(font_name, Font.fields):
+			txt.setFont(font_name.value, font_size)
+		elif isinstance(font_name, str):
+			txt.setFont(font_name, font_size)
+		# else: pass
 		txt.setLeading(font_size + self.spacing)
 		txt.setFillColor(color)
 		txt.textLine(text)
@@ -207,7 +243,7 @@ class PDFREPORT:
 		# # total_spacing = self.spacing + self.PDF._fontsize
 		# return 0.0, txt.getY() # y - total_spacing
 
-		font_name = fontTypes.normal.name
+		font_name = Font.fields.normal.value
 		font_size = 12
 
 		x=self.get_x()
@@ -240,7 +276,7 @@ class PDFREPORT:
 		# # total_spacing = self.spacing + self.PDF._fontsize
 		# return 0.0, txt.getY() # - self.spacing # y - total_spacing
 		
-		font_name = fontTypes.bold.name
+		font_name = Font.fields.bold.value
 		font_size = 14
 
 		x=self.get_x()
@@ -251,6 +287,59 @@ class PDFREPORT:
 		new_x, new_y = self.write(x, y, text, font_name, font_size)
 
 		return new_x, new_y
+
+
+
+def _from_markdown(md_path: str, pdf_path: str):
+	''' ⚠️INCOMPLETE
+	Create an .pdf document from MarkDown File
+	'''
+	pass
+
+##OLD METHODS ---------------------------------------------------------------------------------------------------------------
+
+# class fontTypes_fields(Enum):
+# 	'''
+# 	Registered Font Types fields
+
+# 	`Fields:`
+
+# 	- normal
+# 	- bold
+# 	- italic
+# 	- italic_bold
+# 	'''
+# 	normal = 'normal'
+# 	bold = 'bold'
+# 	italic = 'italic'
+# 	italic_bold = 'italic_bold'
+
+# @dataclass
+# class fontTypes:
+# 	'''
+# 	Registered Font Types in text format
+
+# 	`Fields`:
+# 		- normal
+# 		- bold
+# 		- italic
+# 		- italic_bold
+# 	'''
+# 	normal: TTFont
+# 	bold: TTFont
+# 	italic: TTFont
+# 	italic_bold: TTFont
+
+# @dataclass
+# class richText():
+# 	'''
+# 	DataClass for defining the content and formatting of a text string
+# 	'''
+# 	value: str = ""
+# 	font: fontTypes = fontTypes.normal
+# 	size: float = 8
+# 	color: colors = colors.black
+
 
 	# def WR_LINE(self, x=int, y=int, TXT=str):
 	# 	'''
@@ -271,18 +360,6 @@ class PDFREPORT:
 	# def WR_LINE_CENTERED(self, x=int, y=int, TXT=str):
 	# 	self.PDF.drawCentredString(x,y,TXT)
 	# 	self.row -= (self.PDF._fontsize + self.spacing)
-	
-	# def WR_MULTILINE(self):
-	# 	'''
-	# 	INCOMPLETE
-	# 	'''
-	# 	# text = self.PDF.beginText(40, 680)
-	# 	# text.setFont("Courier", 18)
-	# 	# text.setFillColor(colors.red)
-	# 	# for line in textLines:
-	# 	# 	text.textLine(line)
-	# 	# self.PDF.drawText(text)
-	# 	pass
 
 	# def WR_HEADER(self, x=int, y=int, TXT=str, filling=None, fontType=fontTypes.bold, size=15):
 	# 	'''
@@ -342,19 +419,3 @@ class PDFREPORT:
 	# 	self.PDF.setLineWidth(lineWidth) # Line Width
 	# 	self.PDF.line(self.marginLeft, y, self.marginRight, y)
 	# 	self.WR_SPACING(2)
-
-	# def WR_SPACING(self, lines=1):
-	# 	self.row -= (self.spacing * 2 * lines)
-	
-	# def SET_DEFAULT(self):
-	# 	'''
-	# 	Return to default font config
-	# 	'''
-	# 	self.SET_FONT(self.defaultFont, self.defaultSize)
-	# 	self.PDF.setFillColor(self.defaulColor)
-
-def from_markdown(md_path: str, pdf_path: str):
-	''' ⚠️INCOMPLETE
-	Create an .pdf document from MarkDown File
-	'''
-	pass

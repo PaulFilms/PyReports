@@ -1,15 +1,17 @@
 # PyReports
 Toolkit for Documentation and Reporting [ALPHA VERSION]
 
-![Last commit](https://img.shields.io/github/last-commit/PaulFilms/PyReports?label=Último%20commit)
+![Last commit](https://img.shields.io/github/last-commit/PaulFilms/PyReports?label=Last%20commit)
 
+<br>
 
-## Tools included
+## 🔧 Tools included
 - Report Spreadsheets .xlsx Files
 - Report .PDF Files
 
+<br>
 
-## 🔧 Installation
+## Installation Method
 
 - Last released version
 
@@ -23,6 +25,7 @@ Toolkit for Documentation and Reporting [ALPHA VERSION]
    pip install git+https://github.com/PaulFilms/PyReports.git@main
    ```
 
+<br>
 
 ## 🧪Examples
 
@@ -79,6 +82,8 @@ my_pdf.showPage()
 my_pdf.save()
 ```
 
+<br>
+
 ## 📦 Dependencies
 
 This project relies on the following open-source libraries:
@@ -90,6 +95,7 @@ This project relies on the following open-source libraries:
 | `reportlab`  | BSD           | Dynamic PDF generation from Python.                           |
 ---
 
+<br>
 
 ## TASK 📒
 
@@ -98,8 +104,9 @@ This project relies on the following open-source libraries:
 - PDF, text size greater than the width of the canvas
 - PDF, Create Tables and charts
 
-
+<br>
 
 ## WARNINGS ⛔
 
 - PDFREPORT its under construction yet
+- XLSREPORT BUG: worksheet=None

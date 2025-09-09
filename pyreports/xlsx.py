@@ -1,7 +1,7 @@
 '''
 Toolkit with simplified functions and methods for create .xlsx spreadsheets
 '''
-__update__ = '2024.11.28'
+__update__ = '2025.09.09'
 
 import os
 import re
@@ -142,6 +142,13 @@ def get_formula(formula: str, row: int, columns_enum: Type[Enum]) -> str:
             column_letter = get_cell(col.value+offset)
             formula = formula.replace(Match.group(0), column_letter)
     return formula
+
+def get_datetime_from_float(value: float):
+    '''
+    Returns a Python Datetime from float value
+    '''
+    excel_start_date = datetime(1899, 12, 30)  # Nota: Excel comienza en 1899-12-30
+    return excel_start_date + timedelta(days=value)
 
 
 ## XLSX REPORT

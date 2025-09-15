@@ -411,11 +411,11 @@ class XLSREPORT:
 
 import pandas as pd
 
-def DF_REPORT(dataFrame: pd.DataFrame, path: str) -> None:
+def DF_REPORT(path: str, dataFrame: pd.DataFrame) -> None:
     '''
     Create excel report from selected Pandas DataFrame
     '''
-    report = XLSREPORT(path)
+    report = XLSREPORT(path, worksheet_name='Report')
     ## HEADERS
     headers: list = dataFrame.columns.values.tolist()
     report.wr_headers(1, 1, headers)

@@ -1,12 +1,13 @@
 '''
 Toolkit with simplified functions and methods for create .xlsx spreadsheets
 '''
-__update__ = '2025.09.09'
+__update__ = '2025.11.26'
 
 import os
 import re
 import locale
-from typing import List, Union, Type, Any
+from datetime import datetime, timedelta
+from typing import List, Union, Type, Any, Tuple
 from enum import Enum
 
 from openpyxl import Workbook, load_workbook
@@ -326,14 +327,56 @@ class XLSREPORT:
         self.ws.cell(row, column).number_format = '0.0E+0'
         # self.row_height(row, 15)
 
-    def wr_image(self, row: int, column: int, img_path: str, scale: float = 100.0) -> None:
+    def wr_image(self, row: int, column: int, img_path: str, scale: float = 100.0) -> Tuple[int, int]:
         '''
-        Insert an image (*.jpg, *.png) into the selected cell 
+        Insert an image (*.jpg, *.png) into the selected cell
+
+        Returns:
+
+        - row : int (next available row after image)
+        - column : int (next available column after image)
         '''
         image = Image(img_path)
         image.height = image.height * scale / 100
         image.width = image.width * scale / 100
         self.ws.add_image(image, get_cell(column=column, row=row))
+
+        # initial_row = row
+        # initial_col = column
+
+        ## ROWS USED
+        remaining_height = image.height
+        # rows_used = 0
+        while remaining_height > 0:
+            row_dim = self.ws.row_dimensions[row].height
+
+            if row_dim is None:
+                row_dim = 15  # altura por defecto en puntos
+
+            row_px = row_dim * 96 / 72  # pt → px
+
+            remaining_height -= row_px
+            # rows_used += 1
+            row += 1
+        
+        ## COLUMNS USED
+        remaining_width = image.width
+        # cols_used = 0
+        while remaining_width > 0:
+            col_letter = get_column_letter(column)
+            col_width = self.ws.column_dimensions[col_letter].width
+
+            if col_width is None:
+                col_width = 8.43  # valor por defecto de Excel
+
+            col_px = col_width * 7 + 5  # conversión a píxeles
+
+            remaining_width -= col_px
+            # cols_used += 1
+            column += 1
+        
+        return row, column
+
 
 
     ## UNDER TEST

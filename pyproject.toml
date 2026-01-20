@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyreports"
+version = "2025.11.26"
+description = "Toolkit for Documentation and Reporting"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+  { name="Pablo GP", email="pablogonzalezpila@gmail.com" }
+]
+requires-python = ">=3.8"
+dependencies = [
+  "openpyxl",
+  "reportlab",
+  "pandas"
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["easypyside*"]
+
+[tool.setuptools.package-data]
+easypyside = ["__forms/*"]
+
+[project.urls]
+"Homepage" = "https://github.com/PaulFilms/PyReports"
+"Documentation" = "https://github.com/PaulFilms/PyReports/blob/main/README.md"
+"Bug Tracker" = "https://github.com/PaulFilms/PyReports/issues"

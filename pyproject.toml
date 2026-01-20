@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyreports"
-version = "2025.11.26"
+version = "2026.01.20"
 description = "Toolkit for Documentation and Reporting"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -23,10 +23,7 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["easypyside*"]
-
-[tool.setuptools.package-data]
-easypyside = ["__forms/*"]
+include = ["pyreports*"]
 
 [project.urls]
 "Homepage" = "https://github.com/PaulFilms/PyReports"

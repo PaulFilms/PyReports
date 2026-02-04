@@ -1,8 +1,6 @@
 '''
 Toolkit with simplified functions and methods for create .xlsx spreadsheets
 '''
-__update__ = '2025.11.26'
-
 import os
 import re
 import locale

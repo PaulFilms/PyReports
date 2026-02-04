@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyreports"
-version = "2026.01.20"
+dynamic = ["version"]
 description = "Toolkit for Documentation and Reporting"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -24,6 +24,9 @@ include-package-data = true
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["pyreports*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "pyreports.__version__" }
 
 [project.urls]
 "Homepage" = "https://github.com/PaulFilms/PyReports"

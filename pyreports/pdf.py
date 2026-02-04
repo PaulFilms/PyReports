@@ -35,8 +35,6 @@ NOTES:
 	```
 
 '''
-__update__ = '2025.07.03'
-
 import os
 from dataclasses import dataclass
 from enum import Enum
